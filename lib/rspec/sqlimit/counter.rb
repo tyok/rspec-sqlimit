@@ -34,13 +34,18 @@ module RSpec::SQLimit
         queries << {
           sql: values[:sql],
           duration: (finish - start) * 1_000,
-          binds: values[:type_casted_binds] || type_cast(values[:binds])
+          binds: get_values(values[:type_casted_binds]) || type_cast(values[:binds])
         }
       end
     end
 
     def type_cast(binds)
       binds.map { |column, value| ActiveRecord::Base.connection.type_cast(value, column) }
+    end
+
+    def get_values(type_casted_binds)
+      return type_casted_binds.call if type_casted_binds.respond_to?(:call)
+      type_casted_binds
     end
   end
 end
